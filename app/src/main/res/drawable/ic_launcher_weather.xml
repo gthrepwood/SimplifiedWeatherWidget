@@ -1,0 +1,34 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background Rounded Square -->
+    <path
+        android:fillColor="#2475E8"
+        android:pathData="M16,0h76c8.8,0 16,7.2 16,16v76c0,8.8 -7.2,16 -16,16H16c-8.8,0 -16,-7.2 -16,-16V16C0,7.2 7.2,0 16,0z" />
+
+    <!-- Sun -->
+    <path
+        android:fillColor="#FFD166"
+        android:pathData="M36,26c-6.6,0 -12,5.4 -12,12s5.4,12 12,12s12,-5.4 12,-12s-5.4,-12 -12,-12z" />
+
+    <!-- Cloud -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,52c-3.1,0 -5.9,1.2 -8,3.2C64.1,52.9 61.2,51 58,51c-6.1,0 -11,4.9 -11,11c0,0.6 0.1,1.2 0.2,1.8c-3.6,1 -6.2,4.2 -6.2,8.2c0,4.7 3.8,8.5 8.5,8.5h27.5c4.7,0 8.5,-3.8 8.5,-8.5c0,-4.4 -3.3,-8 -7.6,-8.4C77.4,55.2 75.9,52 74,52z" />
+
+    <!-- Clock Icon Overlay -->
+    <path
+        android:fillColor="#1D2838"
+        android:pathData="M54,56c-10.5,0 -19,8.5 -19,19s8.5,19 19,19s19,-8.5 19,-19s-8.5,-19 -19,-19z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,59c-8.8,0 -16,7.2 -16,16s7.2,16 16,16s16,-7.2 16,-16s-7.2,-16 -16,-16z" />
+    <path
+        android:strokeColor="#1D2838"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M54,67v8h6" />
+</vector>

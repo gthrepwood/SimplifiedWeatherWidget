@@ -5,6 +5,8 @@
     <application
         android:allowBackup="true"
         android:label="Simplified Weather Widget"
+        android:icon="@drawable/ic_launcher_weather"
+        android:roundIcon="@drawable/ic_launcher_weather"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
         <activity
