@@ -1,0 +1,115 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:baselineAligned="false"
+    android:padding="10dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Left Section: Time & Date -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <TextClock
+            android:id="@+id/time_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:textColor="#17243A"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:includeFontPadding="false" />
+
+        <TextClock
+            android:id="@+id/date_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="EEE, MMM d"
+            android:format24Hour="EEE, MMM d"
+            android:textColor="#68778B"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Center Section: Weather Panel -->
+    <LinearLayout
+        android:id="@+id/weather_panel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.2"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/temperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--°"
+                android:textColor="#17243A"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/weather_condition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="6dp"
+                android:paddingEnd="2dp"
+                android:text="Loading"
+                android:textColor="#52647B"
+                android:textSize="11sp"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/high_low"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="H --° · L --°"
+            android:textColor="#68778B"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Right Section: Battery & Storage -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="end|center_vertical"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp">
+
+        <TextView
+            android:id="@+id/battery_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bat: --%"
+            android:textColor="#24334A"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/storage_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Disk: --%"
+            android:textColor="#24334A"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+</LinearLayout>

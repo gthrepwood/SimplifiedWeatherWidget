@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Simplified Weather Widget</string>
+    <string name="widget_description">Clock, local weather, battery, and storage</string>
+</resources>
