@@ -1,0 +1,8 @@
+A simple, lightweight Android weather widget inspired by clean design.
+
+Features:
+- Simplified Weather Widget: Clean and straightforward weather display at a glance.
+- Minimal Permissions: Requests little permission (only location when needed) for local weather.
+- Opaque Design: Solid, distraction-free opaque background.
+- Dark & Light Mode: Seamlessly works in both dark and light modes.
+- Simple & Small: Compact footprint that takes up minimal space on your screen.

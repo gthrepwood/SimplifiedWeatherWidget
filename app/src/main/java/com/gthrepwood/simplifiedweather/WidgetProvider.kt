@@ -1,4 +1,4 @@
-package com.example.hyperos3widget
+package com.gthrepwood.simplifiedweather
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -156,7 +156,7 @@ class WidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
-        const val ACTION_REFRESH = "com.example.hyperos3widget.REFRESH"
+        const val ACTION_REFRESH = "com.gthrepwood.simplifiedweather.REFRESH"
         const val PREFS = "widget_settings"
         private val EXECUTOR = Executors.newSingleThreadExecutor()
     }

@@ -23,7 +23,7 @@
             android:format12Hour="h:mm"
             android:format24Hour="HH:mm"
             android:textColor="#17243A"
-            android:textSize="26sp"
+            android:textSize="40sp"
             android:textStyle="bold"
             android:includeFontPadding="false" />
 
@@ -72,7 +72,7 @@
                 android:paddingEnd="2dp"
                 android:text="Loading"
                 android:textColor="#52647B"
-                android:textSize="11sp"
+                android:textSize="14sp"
                 android:maxLines="1" />
         </LinearLayout>
 
@@ -82,7 +82,7 @@
             android:layout_height="wrap_content"
             android:text="H --° · L --°"
             android:textColor="#68778B"
-            android:textSize="11sp" />
+            android:textSize="14sp" />
     </LinearLayout>
 
     <!-- Right Section: Battery & Storage -->
@@ -101,7 +101,7 @@
             android:layout_height="wrap_content"
             android:text="Bat: --%"
             android:textColor="#24334A"
-            android:textSize="11sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/storage_value"
@@ -109,7 +109,7 @@
             android:layout_height="wrap_content"
             android:text="Disk: --%"
             android:textColor="#24334A"
-            android:textSize="11sp" />
+            android:textSize="14sp" />
     </LinearLayout>
 
 </LinearLayout>

@@ -1,0 +1,4 @@
+Initial release of Simplified Weather Widget.
+- Clean and straightforward weather display at a glance.
+- Clock, local weather, battery, and storage indicators.
+- Dark & Light mode support.

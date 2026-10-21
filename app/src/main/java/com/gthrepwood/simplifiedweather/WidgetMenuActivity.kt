@@ -1,11 +1,10 @@
-package com.example.hyperos3widget
+package com.gthrepwood.simplifiedweather
 
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -55,7 +54,7 @@ class WidgetMenuActivity : Activity() {
 
     private fun showThemeDialog() {
         val themeLabels = arrayOf("Set Dark (Dark Text)", "Set Light (White Text)")
-        val prefs = getSharedPreferences(WidgetProvider.PREFS, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE)
 
         AlertDialog.Builder(this)
             .setTitle("Set Theme (Font Color)")
@@ -74,7 +73,7 @@ class WidgetMenuActivity : Activity() {
     private fun showOpacityDialog() {
         val opacityValues = intArrayOf(0, 30, 50, 70, 100)
         val opacityLabels = arrayOf("0% (Transparent)", "30%", "50%", "70%", "100% (Opaque)")
-        val prefs = getSharedPreferences(WidgetProvider.PREFS, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE)
 
         AlertDialog.Builder(this)
             .setTitle("Set Widget Opacity")
@@ -95,10 +94,21 @@ class WidgetMenuActivity : Activity() {
             .setMessage(
                 "Simplified Weather Widget v1.0\n\n" +
                 "© 2026 All Rights Reserved.\n" +
-                "Author: Tamas Gervai\n" +
-                "Contact: gthrepwood@gmail.com"
+                "Author: Tamas Gervai (gthrepwood@gmail.com)\n" +
+                "GitHub:\ngithub.com/gthrepwood/SimplifiedWeatherWidget"
             )
-            .setPositiveButton("OK") { _, _ -> finish() }
+            .setNeutralButton("GitHub Repo") { _, _ ->
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/gthrepwood/SimplifiedWeatherWidget")).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    startActivity(intent)
+                } catch (_: Exception) {
+                    Toast.makeText(this, "No browser found.", Toast.LENGTH_SHORT).show()
+                }
+                finish()
+            }
+            .setNegativeButton("Close") { _, _ -> finish() }
             .setOnDismissListener { finish() }
             .show()
     }
@@ -145,7 +155,7 @@ class WidgetMenuActivity : Activity() {
     }
 
     private fun saveLocation(location: Location) {
-        getSharedPreferences(WidgetProvider.PREFS, Context.MODE_PRIVATE).edit()
+        getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE).edit()
             .putString("lat", location.latitude.toString())
             .putString("lon", location.longitude.toString())
             .apply()

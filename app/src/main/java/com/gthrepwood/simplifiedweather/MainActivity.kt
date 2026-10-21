@@ -1,10 +1,9 @@
-package com.example.hyperos3widget
+package com.gthrepwood.simplifiedweather
 
 import android.Manifest
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -42,7 +41,7 @@ class MainActivity : Activity() {
             }
         })
         setContentView(root)
-        val prefs = getSharedPreferences(WidgetProvider.PREFS, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE)
         if (prefs.contains("lat")) status.text = "Location is set. Add the widget from the home-screen Widgets menu."
         refreshWidgets()
     }
@@ -83,7 +82,7 @@ class MainActivity : Activity() {
     }
 
     private fun saveLocation(location: Location) {
-        getSharedPreferences(WidgetProvider.PREFS, Context.MODE_PRIVATE).edit().putString("lat", location.latitude.toString()).putString("lon", location.longitude.toString()).apply()
+        getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE).edit().putString("lat", location.latitude.toString()).putString("lon", location.longitude.toString()).apply()
         status.text = "Location saved. Add the widget from the home-screen Widgets menu."
         refreshWidgets()
     }
