@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Environment
 import android.os.StatFs
@@ -39,7 +40,7 @@ class WidgetProvider : AppWidgetProvider() {
             val isLight = prefs.getString("widget_theme", "dark") == "light"
             val opacity = prefs.getInt("opacity_pct", 100)
 
-            val alphaInt = (opacity * 255 / 100).coerceIn(0, 255)
+            val alphaInt = ((opacity * 255) / 100).coerceIn(0, 255)
             val baseBgColor = if (isLight) 0x0017243A else 0x00F7FAFF
             val backgroundColor = (alphaInt shl 24) or baseBgColor
             views.setInt(R.id.widget_root, "setBackgroundColor", backgroundColor)
@@ -56,7 +57,7 @@ class WidgetProvider : AppWidgetProvider() {
             views.setTextColor(R.id.high_low, secondaryTextColor)
 
             val battery = try {
-                context.registerReceiver(null, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             } catch (_: Exception) { null }
             val level = battery?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
             val scale = battery?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
@@ -79,14 +80,16 @@ class WidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.high_low, highLow)
 
             val refreshIntent = PendingIntent.getBroadcast(
-                context, id,
+                context,
+                id,
                 Intent(context, WidgetProvider::class.java).setAction(ACTION_REFRESH),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             views.setOnClickPendingIntent(R.id.weather_panel, refreshIntent)
 
             val menuIntent = PendingIntent.getActivity(
-                context, id,
+                context,
+                id,
                 Intent(context, WidgetMenuActivity::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )

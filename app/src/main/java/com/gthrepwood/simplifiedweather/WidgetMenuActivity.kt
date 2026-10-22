@@ -10,10 +10,11 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 class WidgetMenuActivity : Activity() {
     private val requestCode = 42
@@ -60,7 +61,7 @@ class WidgetMenuActivity : Activity() {
             .setTitle("Set Theme (Font Color)")
             .setItems(themeLabels) { _, which ->
                 val newTheme = if (which == 0) "dark" else "light"
-                prefs.edit().putString("widget_theme", newTheme).apply()
+                prefs.edit { putString("widget_theme", newTheme) }
                 val label = if (which == 0) "Dark Text" else "Light Text"
                 Toast.makeText(this, "Theme set to $label", Toast.LENGTH_SHORT).show()
                 updateWeather()
@@ -79,7 +80,7 @@ class WidgetMenuActivity : Activity() {
             .setTitle("Set Widget Opacity")
             .setItems(opacityLabels) { _, which ->
                 val newOpacity = opacityValues[which]
-                prefs.edit().putInt("opacity_pct", newOpacity).apply()
+                prefs.edit { putInt("opacity_pct", newOpacity) }
                 Toast.makeText(this, "Widget opacity set to $newOpacity%", Toast.LENGTH_SHORT).show()
                 updateWeather()
             }
@@ -93,13 +94,13 @@ class WidgetMenuActivity : Activity() {
             .setTitle("About Simplified Weather Widget")
             .setMessage(
                 "Simplified Weather Widget v1.0\n\n" +
-                "© 2026 All Rights Reserved.\n" +
-                "Author: Tamas Gervai (gthrepwood@gmail.com)\n" +
-                "GitHub:\ngithub.com/gthrepwood/SimplifiedWeatherWidget"
+                        "© 2026 All Rights Reserved.\n" +
+                        "Author: Tamas Gervai (gthrepwood@gmail.com)\n" +
+                        "GitHub:\ngithub.com/gthrepwood/SimplifiedWeatherWidget"
             )
             .setNeutralButton("GitHub Repo") { _, _ ->
                 try {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/gthrepwood/SimplifiedWeatherWidget")).apply {
+                    val intent = Intent(Intent.ACTION_VIEW, "https://github.com/gthrepwood/SimplifiedWeatherWidget".toUri()).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     startActivity(intent)
@@ -114,9 +115,14 @@ class WidgetMenuActivity : Activity() {
     }
 
     private fun requestLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), requestCode)
+        val hasFine = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (!hasFine && !hasCoarse) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                requestCode
+            )
             return
         }
         findLocation()
@@ -137,14 +143,35 @@ class WidgetMenuActivity : Activity() {
         val lm = getSystemService(LOCATION_SERVICE) as LocationManager
         try {
             val last = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)
-                .mapNotNull { provider -> try { lm.getLastKnownLocation(provider) } catch (_: Exception) { null } }
+                .asSequence()
+                .mapNotNull { provider ->
+                    try {
+                        lm.getLastKnownLocation(provider)
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
                 .maxByOrNull { it.time }
-            if (last != null) { saveLocation(last); return }
-            val provider = if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
+
+            if (last != null) {
+                saveLocation(last)
+                return
+            }
+
+            val provider = if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                LocationManager.NETWORK_PROVIDER
+            } else {
+                LocationManager.GPS_PROVIDER
+            }
+
+            val hasFine = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            val hasCoarse = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            if (!hasFine && !hasCoarse) return
+
             lm.requestSingleUpdate(provider, object : LocationListener {
                 override fun onLocationChanged(location: Location) = saveLocation(location)
-                @Deprecated("Deprecated by Android") override fun onStatusChanged(provider: String?, statusCode: Int, extras: Bundle?) {}
+                @Deprecated("Deprecated by Android")
+                override fun onStatusChanged(provider: String?, statusCode: Int, extras: Bundle?) {}
                 override fun onProviderEnabled(provider: String) {}
                 override fun onProviderDisabled(provider: String) {}
             }, mainLooper)
@@ -155,10 +182,10 @@ class WidgetMenuActivity : Activity() {
     }
 
     private fun saveLocation(location: Location) {
-        getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE).edit()
-            .putString("lat", location.latitude.toString())
-            .putString("lon", location.longitude.toString())
-            .apply()
+        getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE).edit {
+            putString("lat", location.latitude.toString())
+            putString("lon", location.longitude.toString())
+        }
         Toast.makeText(this, "Location saved! Updating weather...", Toast.LENGTH_SHORT).show()
         updateWeather()
     }
@@ -189,7 +216,7 @@ class WidgetMenuActivity : Activity() {
             startActivity(intent)
         } catch (_: Exception) {
             try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("content://com.android.calendar/time/${System.currentTimeMillis()}")).apply {
+                val intent = Intent(Intent.ACTION_VIEW, "content://com.android.calendar/time/${System.currentTimeMillis()}".toUri()).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
                 startActivity(intent)
@@ -200,7 +227,7 @@ class WidgetMenuActivity : Activity() {
 
     private fun openUrl(url: String) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(intent)

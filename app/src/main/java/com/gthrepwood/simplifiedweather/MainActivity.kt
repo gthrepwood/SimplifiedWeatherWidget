@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -13,6 +14,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 
 class MainActivity : Activity() {
     private lateinit var status: TextView
@@ -25,11 +27,27 @@ class MainActivity : Activity() {
             setPadding(48, 64, 48, 48)
             setBackgroundColor(0xFFF3F6FA.toInt())
         }
-        root.addView(TextView(this).apply { text = "Simplified Weather Widget"; textSize = 26f; setTextColor(0xFF1D2838.toInt()) })
-        root.addView(TextView(this).apply { text = "Add the 4×2 widget from your home screen’s Widgets menu. Allow location to show local weather."; textSize = 16f; setPadding(0, 24, 0, 24); setTextColor(0xFF526174.toInt()) })
-        status = TextView(this).apply { text = "Location is needed for local weather."; textSize = 14f; setTextColor(0xFF526174.toInt()) }
+        root.addView(TextView(this).apply {
+            text = "Simplified Weather Widget"
+            textSize = 26f
+            setTextColor(0xFF1D2838.toInt())
+        })
+        root.addView(TextView(this).apply {
+            text = "Add the 4×2 widget from your home screen’s Widgets menu. Allow location to show local weather."
+            textSize = 16f
+            setPadding(0, 24, 0, 24)
+            setTextColor(0xFF526174.toInt())
+        })
+        status = TextView(this).apply {
+            text = "Location is needed for local weather."
+            textSize = 14f
+            setTextColor(0xFF526174.toInt())
+        }
         root.addView(status)
-        root.addView(Button(this).apply { text = "Enable local weather"; setOnClickListener { requestLocation() } })
+        root.addView(Button(this).apply {
+            text = "Enable local weather"
+            setOnClickListener { requestLocation() }
+        })
         root.addView(Button(this).apply {
             text = "Add Widget to Home Screen"
             setOnClickListener {
@@ -42,14 +60,21 @@ class MainActivity : Activity() {
         })
         setContentView(root)
         val prefs = getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE)
-        if (prefs.contains("lat")) status.text = "Location is set. Add the widget from the home-screen Widgets menu."
+        if (prefs.contains("lat")) {
+            status.text = "Location is set. Add the widget from the home-screen Widgets menu."
+        }
         refreshWidgets()
     }
 
     private fun requestLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), requestCode)
+        val hasFine = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (!hasFine && !hasCoarse) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                requestCode
+            )
             return
         }
         findLocation()
@@ -57,8 +82,11 @@ class MainActivity : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, results: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, results)
-        if (requestCode == this.requestCode && results.any { it == PackageManager.PERMISSION_GRANTED }) findLocation()
-        else status.text = "Location permission wasn’t granted. Weather will be unavailable; you can enable it later."
+        if (requestCode == this.requestCode && results.any { it == PackageManager.PERMISSION_GRANTED }) {
+            findLocation()
+        } else {
+            status.text = "Location permission wasn’t granted. Weather will be unavailable; you can enable it later."
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -66,30 +94,61 @@ class MainActivity : Activity() {
         val lm = getSystemService(LOCATION_SERVICE) as LocationManager
         try {
             val last = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)
-                .mapNotNull { provider -> try { lm.getLastKnownLocation(provider) } catch (_: Exception) { null } }
+                .asSequence()
+                .mapNotNull { provider ->
+                    try {
+                        lm.getLastKnownLocation(provider)
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
                 .maxByOrNull { it.time }
-            if (last != null) { saveLocation(last); return }
+
+            if (last != null) {
+                saveLocation(last)
+                return
+            }
+
             status.text = "Getting location… make sure Location is on."
-            val provider = if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
+            val provider = if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                LocationManager.NETWORK_PROVIDER
+            } else {
+                LocationManager.GPS_PROVIDER
+            }
+
+            val hasFine = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            val hasCoarse = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            if (!hasFine && !hasCoarse) return
+
             lm.requestSingleUpdate(provider, object : LocationListener {
                 override fun onLocationChanged(location: Location) = saveLocation(location)
-                @Deprecated("Deprecated by Android") override fun onStatusChanged(provider: String?, statusCode: Int, extras: Bundle?) {}
+                @Deprecated("Deprecated by Android")
+                override fun onStatusChanged(provider: String?, statusCode: Int, extras: Bundle?) {}
                 override fun onProviderEnabled(provider: String) {}
-                override fun onProviderDisabled(provider: String) { status.text = "Turn on Location and try again." }
+                override fun onProviderDisabled(provider: String) {
+                    status.text = "Turn on Location and try again."
+                }
             }, mainLooper)
-        } catch (_: Exception) { status.text = "Couldn’t read location. Turn on Location and try again." }
+        } catch (_: Exception) {
+            status.text = "Couldn’t read location. Turn on Location and try again."
+        }
     }
 
     private fun saveLocation(location: Location) {
-        getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE).edit().putString("lat", location.latitude.toString()).putString("lon", location.longitude.toString()).apply()
+        getSharedPreferences(WidgetProvider.PREFS, MODE_PRIVATE).edit {
+            putString("lat", location.latitude.toString())
+            putString("lon", location.longitude.toString())
+        }
         status.text = "Location saved. Add the widget from the home-screen Widgets menu."
         refreshWidgets()
     }
 
     private fun refreshWidgets() {
-        val intent = android.content.Intent(this, WidgetProvider::class.java).setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, AppWidgetManager.getInstance(this).getAppWidgetIds(ComponentName(this, WidgetProvider::class.java)))
+        val intent = Intent(this, WidgetProvider::class.java).setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+        intent.putExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_IDS,
+            AppWidgetManager.getInstance(this).getAppWidgetIds(ComponentName(this, WidgetProvider::class.java))
+        )
         sendBroadcast(intent)
     }
 }
