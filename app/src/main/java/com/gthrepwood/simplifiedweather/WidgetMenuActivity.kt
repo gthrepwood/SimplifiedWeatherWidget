@@ -33,7 +33,7 @@ class WidgetMenuActivity : Activity() {
             "Update Weather",
             "Open Calendar",
             "Open Időkép (idokep.hu)",
-            "About"
+            "About",
         )
         AlertDialog.Builder(this)
             .setTitle("Simplified Weather Widget Menu")
@@ -96,18 +96,10 @@ class WidgetMenuActivity : Activity() {
                 "Simplified Weather Widget v1.0\n\n" +
                         "© 2026 All Rights Reserved.\n" +
                         "Author: Tamas Gervai (gthrepwood@gmail.com)\n" +
-                        "GitHub:\ngithub.com/gthrepwood/SimplifiedWeatherWidget"
+                        "GitHub:\ngithub.com/gthrepwood/SimplifiedWeatherWidget",
             )
             .setNeutralButton("GitHub Repo") { _, _ ->
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, "https://github.com/gthrepwood/SimplifiedWeatherWidget".toUri()).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    startActivity(intent)
-                } catch (_: Exception) {
-                    Toast.makeText(this, "No browser found.", Toast.LENGTH_SHORT).show()
-                }
-                finish()
+                openUrl("https://github.com/gthrepwood/SimplifiedWeatherWidget")
             }
             .setNegativeButton("Close") { _, _ -> finish() }
             .setOnDismissListener { finish() }
@@ -115,13 +107,12 @@ class WidgetMenuActivity : Activity() {
     }
 
     private fun requestLocation() {
-        val hasFine = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         val hasCoarse = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        if (!hasFine && !hasCoarse) {
+        if (!hasCoarse) {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-                requestCode
+                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                requestCode,
             )
             return
         }
@@ -130,7 +121,7 @@ class WidgetMenuActivity : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, results: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, results)
-        if (requestCode == this.requestCode && results.any { it == PackageManager.PERMISSION_GRANTED }) {
+        if ((requestCode == this.requestCode) && results.any { it == PackageManager.PERMISSION_GRANTED }) {
             findLocation()
         } else {
             Toast.makeText(this, "Location permission not granted.", Toast.LENGTH_SHORT).show()
@@ -142,7 +133,8 @@ class WidgetMenuActivity : Activity() {
     private fun findLocation() {
         val lm = getSystemService(LOCATION_SERVICE) as LocationManager
         try {
-            val last = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)
+            val providers = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER)
+            val last = providers
                 .asSequence()
                 .mapNotNull { provider ->
                     try {
@@ -161,22 +153,25 @@ class WidgetMenuActivity : Activity() {
             val provider = if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 LocationManager.NETWORK_PROVIDER
             } else {
-                LocationManager.GPS_PROVIDER
+                LocationManager.PASSIVE_PROVIDER
             }
 
-            val hasFine = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
             val hasCoarse = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            if (!hasFine && !hasCoarse) return
+            if (!hasCoarse) return
 
-            lm.requestSingleUpdate(provider, object : LocationListener {
-                override fun onLocationChanged(location: Location) = saveLocation(location)
-                @Deprecated("Deprecated by Android")
-                override fun onStatusChanged(provider: String?, statusCode: Int, extras: Bundle?) {}
-                override fun onProviderEnabled(provider: String) {}
-                override fun onProviderDisabled(provider: String) {}
-            }, mainLooper)
+            lm.requestSingleUpdate(
+                provider,
+                object : LocationListener {
+                    override fun onLocationChanged(location: Location) = saveLocation(location)
+                    @Deprecated("Deprecated by Android")
+                    override fun onStatusChanged(provider: String?, statusCode: Int, extras: Bundle?) {}
+                    override fun onProviderEnabled(provider: String) {}
+                    override fun onProviderDisabled(provider: String) {}
+                },
+                mainLooper,
+            )
         } catch (_: Exception) {
-            Toast.makeText(this, "Couldn't read location. Ensure GPS/Location is ON.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Couldn't read location. Ensure Location is ON.", Toast.LENGTH_SHORT).show()
             finish()
         }
     }

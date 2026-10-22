@@ -61,7 +61,7 @@ class WidgetProvider : AppWidgetProvider() {
             } catch (_: Exception) { null }
             val level = battery?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
             val scale = battery?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
-            val pct = if (level >= 0 && scale > 0) (100f * level / scale).roundToInt() else 0
+            val pct = if ((level >= 0) && (scale > 0)) (((100f * level) / scale)).roundToInt() else 0
             views.setTextViewText(R.id.battery_value, "Bat: $pct%")
 
             val usedPct = try {
@@ -69,7 +69,7 @@ class WidgetProvider : AppWidgetProvider() {
                 val total = stat.totalBytes
                 val available = stat.availableBytes
                 val used = (total - available).coerceAtLeast(0)
-                if (total > 0) (100f * used / total).roundToInt().coerceIn(0, 100) else 0
+                if (total > 0) (((100f * used) / total)).roundToInt().coerceIn(0, 100) else 0
             } catch (_: Exception) {
                 0
             }
@@ -83,7 +83,7 @@ class WidgetProvider : AppWidgetProvider() {
                 context,
                 id,
                 Intent(context, WidgetProvider::class.java).setAction(ACTION_REFRESH),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             views.setOnClickPendingIntent(R.id.weather_panel, refreshIntent)
 
@@ -91,7 +91,7 @@ class WidgetProvider : AppWidgetProvider() {
                 context,
                 id,
                 Intent(context, WidgetMenuActivity::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             views.setOnClickPendingIntent(R.id.widget_root, menuIntent)
             manager.updateAppWidget(id, views)
@@ -111,7 +111,7 @@ class WidgetProvider : AppWidgetProvider() {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val lat = prefs.getString("lat", null)?.toDoubleOrNull()
         val lon = prefs.getString("lon", null)?.toDoubleOrNull()
-        if (lat == null || lon == null) {
+        if ((lat == null) || (lon == null)) {
             ids.forEach { render(context, manager, it, "Open app to set location", "--°", "Tap to retry") }
             return
         }
